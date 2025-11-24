@@ -1,0 +1,36 @@
+.wrong-review-page {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: center;
+}
+
+.wrong-review-page h1 {
+  font-size: 2.5rem;
+  color: #333;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 60px 40px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.empty-message {
+  font-size: 1.8rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.empty-subtitle {
+  font-size: 1.2rem;
+  color: #999;
+  text-align: center;
+}
+

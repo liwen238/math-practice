@@ -1,0 +1,105 @@
+.setup-page {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.setup-page h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.setup-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.setup-section h2 {
+  font-size: 1.5rem;
+  color: #444;
+}
+
+.level-selector {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.level-button {
+  padding: 15px 30px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  border: 3px solid #4CAF50;
+  background-color: white;
+  color: #4CAF50;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 100px;
+}
+
+.level-button:hover {
+  background-color: #f0f8f0;
+}
+
+.level-button.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.operations-selector {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.operation-button {
+  padding: 20px 30px;
+  font-size: 2rem;
+  font-weight: bold;
+  border: 3px solid #2196F3;
+  background-color: white;
+  color: #2196F3;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 80px;
+}
+
+.operation-button:hover {
+  background-color: #f0f7ff;
+}
+
+.operation-button.active {
+  background-color: #2196F3;
+  color: white;
+}
+
+.start-session-button {
+  padding: 18px 40px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: #FF9800;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 20px;
+}
+
+.start-session-button:hover {
+  background-color: #F57C00;
+  transform: scale(1.05);
+}
+
