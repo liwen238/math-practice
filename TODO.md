@@ -28,31 +28,31 @@
   - [x] Empty-state message ("No wrong questions yet").
 
 ## Phase 2 — Core Question Engine (medium-easy)
-- [ ] Define data models:
-  - [ ] `Question`, `Session`, `WrongRecord`.
-- [ ] Implement random question generators:
-  - [ ] Addition generator (with negatives allowed).
-  - [ ] Subtraction generator (with negatives allowed).
-  - [ ] Multiplication generator (tables up to 20).
-  - [ ] Division generator (exact only).
-- [ ] Implement distractor/choices generator:
-  - [ ] Produce 4 unique choices.
-  - [ ] Shuffle choices.
-- [ ] Implement “no duplicates within session” logic.
+- [x] Define data models:
+  - [x] `Question`, `Session`, `WrongRecord`.
+- [x] Implement random question generators:
+  - [x] Addition generator (with negatives allowed).
+  - [x] Subtraction generator (with negatives allowed).
+  - [x] Multiplication generator (tables up to 20).
+  - [x] Division generator (exact only).
+- [x] Implement distractor/choices generator:
+  - [x] Produce 4 unique choices.
+  - [x] Shuffle choices.
+- [x] Implement "no duplicates within session" logic.
 
 ## Phase 3 — Session Logic (medium)
-- [ ] Start Session from SetupPage.
-- [ ] Render current question in SessionPage.
-- [ ] Track selectedAnswer.
-- [ ] Disable choice buttons after flipping.
-- [ ] Auto-advance to next card.
-- [ ] Navigate to `/summary` after 10 questions.
+- [x] Start Session from SetupPage.
+- [x] Render current question in SessionPage.
+- [x] Track selectedAnswer.
+- [x] Disable choice buttons after flipping.
+- [x] Auto-advance to next card.
+- [x] Navigate to `/summary` after 10 questions.
 
 ## Phase 4 — Card Interaction (medium)
-- [ ] Implement QuestionCard component with flip.
-- [ ] Front/back rendering.
-- [ ] Flip button / card click.
-- [ ] Show correct answer & self-report buttons on back.
+- [x] Implement QuestionCard component with flip.
+- [x] Front/back rendering.
+- [x] Flip button / card click.
+- [x] Show correct answer & self-report buttons on back.
 
 ## Phase 5 — Per-Session Statistics (medium-hard)
 - [ ] Track attempted, correct, incorrect.

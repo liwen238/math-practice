@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { generateSessionQuestions } from '../utils/questionGenerator'
 import './SetupPage.css'
 
 function SetupPage() {
+  const navigate = useNavigate()
   const [selectedLevel, setSelectedLevel] = useState(null)
   const [selectedOperations, setSelectedOperations] = useState({
     add: false,
@@ -22,8 +25,51 @@ function SetupPage() {
   }
 
   const handleStartSession = () => {
-    // Logic will be added in Phase 3
-    console.log('Start session clicked')
+    // Validate selections
+    if (!selectedLevel) {
+      alert('Please select an age level')
+      return
+    }
+
+    // Convert level string to number
+    const levelMap = {
+      '7-8': 1,
+      '9-10': 2,
+      '11-12': 3,
+    }
+    const level = levelMap[selectedLevel]
+
+    // Convert operation toggles to array
+    const operations = []
+    if (selectedOperations.add) operations.push('add')
+    if (selectedOperations.subtract) operations.push('subtract')
+    if (selectedOperations.multiply) operations.push('multiply')
+    if (selectedOperations.divide) operations.push('divide')
+
+    if (operations.length === 0) {
+      alert('Please select at least one operation')
+      return
+    }
+
+    // Generate questions
+    const questions = generateSessionQuestions(level, operations)
+
+    // Create session object
+    const session = {
+      sessionId: `session-${Date.now()}`,
+      level,
+      operations,
+      questions,
+      currentQuestionIndex: 0,
+      difficulty: 0,
+      answers: new Array(10).fill(null), // Track answers for each question
+    }
+
+    // Store session in sessionStorage (temporary, for current session)
+    sessionStorage.setItem('currentSession', JSON.stringify(session))
+
+    // Navigate to session page
+    navigate('/session')
   }
 
   return (
