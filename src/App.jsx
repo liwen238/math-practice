@@ -9,7 +9,12 @@ import './App.css'
 
 function App() {
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <AppShell>
         <Routes>
           <Route path="/" element={<SetupPage />} />
