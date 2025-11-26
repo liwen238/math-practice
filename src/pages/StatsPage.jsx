@@ -134,19 +134,23 @@ function StatsPage() {
             </div>
             {showHistory && (
               <div className="session-history">
-                {allSessions.slice().reverse().map((session, index) => (
-                  <div key={session.sessionId || index} className="session-item">
-                    <div className="session-header">
-                      <span className="session-date">{formatDateShort(session.timestamp)}</span>
-                      <span className="session-accuracy">{session.accuracy}%</span>
+                {allSessions.slice().reverse().map((session, reversedIndex) => {
+                  // Always include index in key to guarantee uniqueness, even if sessionId or timestamp are duplicated
+                  const uniqueKey = `${session.sessionId || session.timestamp || 'session'}-${reversedIndex}`
+                  return (
+                    <div key={uniqueKey} className="session-item">
+                      <div className="session-header">
+                        <span className="session-date">{formatDateShort(session.timestamp)}</span>
+                        <span className="session-accuracy">{session.accuracy}%</span>
+                      </div>
+                      <div className="session-details">
+                        <span className="session-stat correct">{session.correct} correct</span>
+                        <span className="session-stat incorrect">{session.incorrect} incorrect</span>
+                        <span className="session-stat">{session.attempted} total</span>
+                      </div>
                     </div>
-                    <div className="session-details">
-                      <span className="session-stat correct">{session.correct} correct</span>
-                      <span className="session-stat incorrect">{session.incorrect} incorrect</span>
-                      <span className="session-stat">{session.attempted} total</span>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>

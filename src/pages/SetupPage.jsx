@@ -2,8 +2,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generateAdaptiveQuestion, generateQuestion } from '../utils/questionGenerator'
 import { initializeDifficulties } from '../utils/difficulty'
+import { LEVEL_MAP, OPERATIONS, QUESTIONS_PER_SESSION, SESSION_STORAGE_KEY } from '../utils/constants'
 import './SetupPage.css'
 
+/**
+ * SetupPage Component
+ * Initial page where users select age level and operations for their practice session
+ * Validates selections and creates a new session with the first question
+ */
 function SetupPage() {
   const navigate = useNavigate()
   const [selectedLevel, setSelectedLevel] = useState(null)
@@ -26,26 +32,21 @@ function SetupPage() {
   }
 
   const handleStartSession = () => {
-    // Validate selections
+    // Validate level selection
     if (!selectedLevel) {
       alert('Please select an age level to continue.')
       return
     }
 
-    // Convert level string to number
-    const levelMap = {
-      '7-8': 1,
-      '9-10': 2,
-      '11-12': 3,
+    // Convert level string to numeric level
+    const level = LEVEL_MAP[selectedLevel]
+    if (!level) {
+      alert('Invalid level selected.')
+      return
     }
-    const level = levelMap[selectedLevel]
 
-    // Convert operation toggles to array
-    const operations = []
-    if (selectedOperations.add) operations.push('add')
-    if (selectedOperations.subtract) operations.push('subtract')
-    if (selectedOperations.multiply) operations.push('multiply')
-    if (selectedOperations.divide) operations.push('divide')
+    // Convert operation toggles to array of operation names
+    const operations = convertOperationsToArray(selectedOperations)
 
     // Guardrail: Ensure at least one operation is selected
     if (operations.length === 0) {
@@ -53,8 +54,41 @@ function SetupPage() {
       return
     }
 
-    // Generate first question (difficulty starts at 0)
+    // Initialize session with first question
+    const session = createNewSession(level, operations)
+
+    // Store session in sessionStorage (temporary, for current session)
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session))
+
+    // Navigate to session page
+    navigate('/session')
+  }
+
+  /**
+   * Convert operation toggle state to array of operation names
+   * @param {Object} selectedOperations - Object with boolean flags for each operation
+   * @returns {string[]} Array of selected operation names
+   */
+  const convertOperationsToArray = (selectedOperations) => {
+    const operations = []
+    if (selectedOperations.add) operations.push(OPERATIONS.ADD)
+    if (selectedOperations.subtract) operations.push(OPERATIONS.SUBTRACT)
+    if (selectedOperations.multiply) operations.push(OPERATIONS.MULTIPLY)
+    if (selectedOperations.divide) operations.push(OPERATIONS.DIVIDE)
+    return operations
+  }
+
+  /**
+   * Create a new session object with initial question
+   * @param {number} level - Numeric level (1, 2, or 3)
+   * @param {string[]} operations - Array of operation names
+   * @returns {Object} Session object
+   */
+  const createNewSession = (level, operations) => {
+    // Initialize difficulty scores for selected operations
     const initialDifficulties = initializeDifficulties(operations)
+    
+    // Generate first question (difficulty starts at 0)
     const firstQuestion = generateAdaptiveQuestion(
       level,
       operations,
@@ -63,22 +97,15 @@ function SetupPage() {
       'q1'
     ) || generateQuestion(level, operations[0], 'q1', 0)
 
-    // Create session object - questions will be generated on-demand
-    const session = {
+    return {
       sessionId: `session-${Date.now()}`,
       level,
       operations,
       questions: [firstQuestion], // Start with just the first question
       currentQuestionIndex: 0,
       difficulties: initialDifficulties, // Difficulty per operation
-      answers: new Array(10).fill(null), // Track answers for each question
+      answers: new Array(QUESTIONS_PER_SESSION).fill(null), // Track answers for each question
     }
-
-    // Store session in sessionStorage (temporary, for current session)
-    sessionStorage.setItem('currentSession', JSON.stringify(session))
-
-    // Navigate to session page
-    navigate('/session')
   }
 
   return (

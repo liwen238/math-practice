@@ -56,8 +56,11 @@ describe('Session Flow Integration', () => {
     })
 
     // Select an answer
-    const choiceButton = screen.getByText(new RegExp(`${mockQuestion.choices[0]}`))
-    fireEvent.click(choiceButton)
+    const choiceButtons = screen.getAllByText(new RegExp(`${mockQuestion.choices[0]}`))
+    const choiceButton = choiceButtons.find(btn => btn.tagName === 'BUTTON')
+    if (choiceButton) {
+      fireEvent.click(choiceButton)
+    }
 
     // Flip card
     const flipButton = screen.getByText('Flip Card')
@@ -101,8 +104,11 @@ describe('Session Flow Integration', () => {
 
     // Select wrong answer
     const wrongChoice = mockQuestion.choices.find(c => c !== mockQuestion.correctAnswer)
-    const wrongButton = screen.getByText(new RegExp(`${wrongChoice}`))
-    fireEvent.click(wrongButton)
+    const wrongButtons = screen.getAllByText(new RegExp(`${wrongChoice}`))
+    const wrongButton = wrongButtons.find(btn => btn.tagName === 'BUTTON')
+    if (wrongButton) {
+      fireEvent.click(wrongButton)
+    }
 
     // Flip and report wrong
     fireEvent.click(screen.getByText('Flip Card'))

@@ -2,8 +2,16 @@ import { useState, useEffect } from 'react'
 import QuestionCard from '../components/QuestionCard'
 import { getAllWrongQuestions, removeWrongQuestion, upsertWrongQuestion, clearWrongQuestions } from '../utils/wrongQuestions'
 import { generateDistractors } from '../utils/questionGenerator'
+import { getOperationSymbol } from '../utils/operationSymbols'
+import { triggerConfetti } from '../utils/confetti'
+import { validateSelfReport } from '../utils/answerValidation'
 import './WrongReviewPage.css'
 
+/**
+ * WrongReviewPage Component
+ * Allows users to review and re-practice questions they answered incorrectly
+ * Tracks missCount and removes questions when answered correctly
+ */
 function WrongReviewPage() {
   const [wrongQuestions, setWrongQuestions] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -11,7 +19,7 @@ function WrongReviewPage() {
   const [selectedAnswer, setSelectedAnswer] = useState(null)
 
   useEffect(() => {
-    // Load wrong questions
+    // Load wrong questions from localStorage on mount
     const questions = getAllWrongQuestions()
     setWrongQuestions(questions)
   }, [])
@@ -53,16 +61,6 @@ function WrongReviewPage() {
   const questionNumber = currentIndex + 1
   const totalQuestions = wrongQuestions.length
 
-  const getOperationSymbol = (operation) => {
-    switch (operation) {
-      case 'add': return '+'
-      case 'subtract': return '−'
-      case 'multiply': return '×'
-      case 'divide': return '÷'
-      default: return operation
-    }
-  }
-
   const handleChoiceClick = (choiceValue) => {
     if (isFlipped) return
     setSelectedAnswer(choiceValue)
@@ -77,69 +75,78 @@ function WrongReviewPage() {
   }
 
   const handleSelfReport = (isCorrect) => {
-    // Check if the selected answer is actually correct
+    // Determine actual correctness based on selected answer
     const actuallyCorrect = selectedAnswer === currentQuestion.correctAnswer
     
-    // Warn user if their self-report doesn't match the actual answer
-    if (isCorrect && !actuallyCorrect) {
-      if (!window.confirm(
-        `Warning: You selected ${selectedAnswer}, but the correct answer is ${currentQuestion.correctAnswer}.\n\n` +
-        `You marked this as "correct", but it's actually wrong. Do you want to continue?`
-      )) {
-        return // User cancelled, don't proceed
-      }
-    } else if (!isCorrect && actuallyCorrect) {
-      if (!window.confirm(
-        `Warning: You selected ${selectedAnswer}, which is the correct answer!\n\n` +
-        `You marked this as "wrong", but it's actually correct. Do you want to continue?`
-      )) {
-        return // User cancelled, don't proceed
-      }
+    // Validate self-report and show warnings if needed
+    if (!validateSelfReport(isCorrect, actuallyCorrect, selectedAnswer, currentQuestion.correctAnswer)) {
+      return // User cancelled after seeing warning
     }
 
-    // Use actual correctness for the logic
+    // Handle correct answer
     if (actuallyCorrect) {
-      // Remove from wrong questions list (they got it right)
-      removeWrongQuestion(currentQuestion)
-      
-      // Update local state
-      const updated = wrongQuestions.filter((_, index) => index !== currentIndex)
-      setWrongQuestions(updated)
-      
-      // If this was the last question, show empty state
-      if (updated.length === 0) {
-        return
-      }
-      
-      // Adjust current index if needed
-      if (currentIndex >= updated.length) {
-        setCurrentIndex(updated.length - 1)
-      }
+      handleCorrectAnswer(isCorrect)
     } else {
-      // Wrong again - update missCount
-      upsertWrongQuestion(currentQuestion)
-      
-      // Update local state to reflect new missCount
-      const updated = [...wrongQuestions]
-      updated[currentIndex] = {
-        ...currentRecord,
-        missCount: currentRecord.missCount + 1,
-        timestamps: [...currentRecord.timestamps, Date.now()],
-      }
-      setWrongQuestions(updated)
-      
-      // Move to next question
-      if (currentIndex < wrongQuestions.length - 1) {
-        setCurrentIndex(currentIndex + 1)
-      } else {
-        // If last question, go back to first
-        setCurrentIndex(0)
-      }
+      handleIncorrectAnswer()
     }
     
     // Reset for next question
     setIsFlipped(false)
     setSelectedAnswer(null)
+  }
+
+  /**
+   * Handle when user answers correctly in review
+   * Removes question from wrong list and triggers celebration if self-reported correctly
+   */
+  const handleCorrectAnswer = (isCorrect) => {
+    // Trigger confetti animation when they correctly report getting it right
+    if (isCorrect) {
+      triggerConfetti()
+    }
+    
+    // Remove from wrong questions list (they got it right)
+    removeWrongQuestion(currentQuestion)
+    
+    // Update local state
+    const updated = wrongQuestions.filter((_, index) => index !== currentIndex)
+    setWrongQuestions(updated)
+    
+    // If this was the last question, show empty state
+    if (updated.length === 0) {
+      return
+    }
+    
+    // Adjust current index if needed
+    if (currentIndex >= updated.length) {
+      setCurrentIndex(updated.length - 1)
+    }
+  }
+
+  /**
+   * Handle when user answers incorrectly again in review
+   * Updates missCount and moves to next question
+   */
+  const handleIncorrectAnswer = () => {
+    // Wrong again - update missCount
+    upsertWrongQuestion(currentQuestion)
+    
+    // Update local state to reflect new missCount
+    const updated = [...wrongQuestions]
+    updated[currentIndex] = {
+      ...currentRecord,
+      missCount: currentRecord.missCount + 1,
+      timestamps: [...currentRecord.timestamps, Date.now()],
+    }
+    setWrongQuestions(updated)
+    
+    // Move to next question (wrap around if at end)
+    if (currentIndex < wrongQuestions.length - 1) {
+      setCurrentIndex(currentIndex + 1)
+    } else {
+      // If last question, go back to first
+      setCurrentIndex(0)
+    }
   }
 
   const handleNext = () => {

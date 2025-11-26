@@ -4,6 +4,13 @@
 import { afterEach, beforeEach, vi } from 'vitest'
 import '@testing-library/jest-dom'
 
+// Mock canvas-confetti since jsdom doesn't support canvas
+vi.mock('canvas-confetti', () => ({
+  default: vi.fn(() => ({
+    // Return a mock function that does nothing
+  })),
+}))
+
 // Setup localStorage mock before each test
 beforeEach(() => {
   // Create a fresh localStorage mock for each test

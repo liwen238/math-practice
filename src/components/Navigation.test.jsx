@@ -6,7 +6,12 @@ import Navigation from './Navigation'
 const renderWithRouter = (component, { route = '/' } = {}) => {
   window.history.pushState({}, 'Test page', route)
   return render(
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       {component}
     </BrowserRouter>
   )

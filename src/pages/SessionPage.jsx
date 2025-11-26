@@ -5,8 +5,17 @@ import { saveLastSessionStats, calculateSessionStats } from '../utils/stats'
 import { upsertWrongQuestion } from '../utils/wrongQuestions'
 import { updateDifficulty } from '../utils/difficulty'
 import { generateAdaptiveQuestion, generateQuestion } from '../utils/questionGenerator'
+import { getOperationSymbol } from '../utils/operationSymbols'
+import { triggerConfetti } from '../utils/confetti'
+import { validateSelfReport } from '../utils/answerValidation'
+import { QUESTIONS_PER_SESSION, LAST_QUESTION_INDEX, SESSION_STORAGE_KEY } from '../utils/constants'
 import './SessionPage.css'
 
+/**
+ * SessionPage Component
+ * Main practice session page where users answer questions
+ * Handles question progression, answer validation, difficulty adjustment, and session completion
+ */
 function SessionPage() {
   const navigate = useNavigate()
   const [session, setSession] = useState(null)
@@ -14,8 +23,9 @@ function SessionPage() {
   const [selectedAnswer, setSelectedAnswer] = useState(null)
 
   useEffect(() => {
-    // Load session from sessionStorage
-    const sessionData = sessionStorage.getItem('currentSession')
+    // Load session from sessionStorage on mount
+    // If no session exists, redirect to setup page
+    const sessionData = sessionStorage.getItem(SESSION_STORAGE_KEY)
     if (!sessionData) {
       // No session found, redirect to home
       navigate('/')
@@ -33,16 +43,6 @@ function SessionPage() {
   const currentQuestion = session.questions[session.currentQuestionIndex]
   const questionNumber = session.currentQuestionIndex + 1
 
-  const getOperationSymbol = (operation) => {
-    switch (operation) {
-      case 'add': return '+'
-      case 'subtract': return '−'
-      case 'multiply': return '×'
-      case 'divide': return '÷'
-      default: return operation
-    }
-  }
-
   const handleChoiceClick = (choiceValue) => {
     if (isFlipped) return
     setSelectedAnswer(choiceValue)
@@ -56,108 +56,123 @@ function SessionPage() {
     setIsFlipped(true)
   }
 
+  /**
+   * Handle user's self-report of answer correctness
+   * Validates the report against actual answer, updates difficulty, saves wrong questions,
+   * and either moves to next question or completes the session
+   * 
+   * @param {boolean} isCorrect - User's self-reported correctness
+   */
   const handleSelfReport = (isCorrect) => {
-    // Check if the selected answer is actually correct
+    // Determine actual correctness based on selected answer
     const actuallyCorrect = selectedAnswer === currentQuestion.correctAnswer
     
-    // Warn user if their self-report doesn't match the actual answer
-    if (isCorrect && !actuallyCorrect) {
-      if (!window.confirm(
-        `Warning: You selected ${selectedAnswer}, but the correct answer is ${currentQuestion.correctAnswer}.\n\n` +
-        `You marked this as "correct", but it's actually wrong. Do you want to continue?`
-      )) {
-        return // User cancelled, don't proceed
-      }
-    } else if (!isCorrect && actuallyCorrect) {
-      if (!window.confirm(
-        `Warning: You selected ${selectedAnswer}, which is the correct answer!\n\n` +
-        `You marked this as "wrong", but it's actually correct. Do you want to continue?`
-      )) {
-        return // User cancelled, don't proceed
-      }
+    // Validate self-report and show warnings if there's a mismatch
+    // Returns false if user cancels after seeing warning
+    if (!validateSelfReport(isCorrect, actuallyCorrect, selectedAnswer, currentQuestion.correctAnswer)) {
+      return // User cancelled after seeing warning
+    }
+    
+    // Trigger confetti animation when user correctly reports a correct answer
+    if (isCorrect && actuallyCorrect) {
+      triggerConfetti()
     }
 
-    // Record the answer (use actual correctness for statistics)
+    // Record the answer (use actual correctness for statistics, not self-report)
     const updatedAnswers = [...(session.answers || [])]
     updatedAnswers[session.currentQuestionIndex] = {
       selectedAnswer,
-      isCorrect: actuallyCorrect, // Use actual correctness, not self-report
+      isCorrect: actuallyCorrect, // Use actual correctness for statistics
       selfReported: isCorrect, // Store what user reported for reference
       questionId: currentQuestion.id,
     }
 
-    // Update difficulty for this operation (use actual correctness)
+    // Update difficulty for this operation based on actual correctness
+    // This ensures adaptive difficulty reflects true performance
     const updatedDifficulties = updateDifficulty(
       session.difficulties || {},
       currentQuestion.operation,
       actuallyCorrect
     )
 
-    // If the answer is actually wrong, save to wrong questions persistence
+    // If the answer is actually wrong, save to wrong questions for review
     if (!actuallyCorrect) {
       upsertWrongQuestion(currentQuestion)
     }
 
-    // Update session
+    // Update session with new answers and difficulties
     const updatedSession = {
       ...session,
       answers: updatedAnswers,
       difficulties: updatedDifficulties,
     }
 
-    // Check if this is the last question
-    if (session.currentQuestionIndex >= 9) {
+    // Check if this is the last question - if so, complete the session
+    if (session.currentQuestionIndex >= LAST_QUESTION_INDEX) {
       // Calculate and save statistics
       const stats = calculateSessionStats(updatedAnswers)
       saveLastSessionStats(stats)
       
       // Save session to sessionStorage for summary page
-      sessionStorage.setItem('currentSession', JSON.stringify(updatedSession))
+      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(updatedSession))
       navigate('/summary')
       return
     }
 
-    // Generate next question with adaptive difficulty
+    // Generate next question with adaptive difficulty based on updated scores
     const nextQuestionIndex = session.currentQuestionIndex + 1
-    
-    // Generate the next question using updated difficulty scores
-    const nextQuestion = generateAdaptiveQuestion(
+    const nextQuestion = generateNextQuestion(
       session.level,
       session.operations,
       updatedDifficulties,
       updatedSession.questions,
-      `q${nextQuestionIndex + 1}`
+      nextQuestionIndex
     )
     
     if (nextQuestion) {
       updatedSession.questions[nextQuestionIndex] = nextQuestion
-    } else {
-      // Fallback: generate a question if adaptive generation fails
-      const nextOperation = session.operations[Math.floor(Math.random() * session.operations.length)]
-      const nextDifficulty = updatedDifficulties[nextOperation] || 0
-      const fallbackQuestion = generateQuestion(
-        session.level,
-        nextOperation,
-        `q${nextQuestionIndex + 1}`,
-        nextDifficulty
-      )
-      updatedSession.questions[nextQuestionIndex] = fallbackQuestion
     }
 
-    // Reset for next question FIRST to ensure card starts unflipped
+    // Reset card state for next question (must happen before updating session)
     setIsFlipped(false)
     setSelectedAnswer(null)
     
     // Move to next question
     updatedSession.currentQuestionIndex = nextQuestionIndex
     setSession(updatedSession)
-    sessionStorage.setItem('currentSession', JSON.stringify(updatedSession))
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(updatedSession))
+  }
+
+  /**
+   * Generate the next question for the session
+   * Attempts adaptive generation first, falls back to simple generation if needed
+   */
+  const generateNextQuestion = (level, operations, difficulties, existingQuestions, questionIndex) => {
+    const questionId = `q${questionIndex + 1}`
+    
+    // Try adaptive generation first
+    const adaptiveQuestion = generateAdaptiveQuestion(
+      level,
+      operations,
+      difficulties,
+      existingQuestions,
+      questionId
+    )
+    
+    if (adaptiveQuestion) {
+      return adaptiveQuestion
+    }
+    
+    // Fallback: generate a question if adaptive generation fails
+    const nextOperation = operations[Math.floor(Math.random() * operations.length)]
+    const nextDifficulty = difficulties[nextOperation] || 0
+    return generateQuestion(level, nextOperation, questionId, nextDifficulty)
   }
 
   return (
     <div className="session-page">
       <div className="progress-header">
-        <h2>Question {questionNumber} of 10</h2>
+        <h2>Question {questionNumber} of {QUESTIONS_PER_SESSION}</h2>
       </div>
 
       <div className="card-container">

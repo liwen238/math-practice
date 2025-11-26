@@ -1,6 +1,9 @@
 /**
  * Statistics utilities
+ * Handles calculation, storage, and retrieval of session statistics
  */
+
+import { MAX_STORED_SESSIONS } from './constants'
 
 const STATS_STORAGE_KEY = 'sessionStats.v1'
 
@@ -40,8 +43,8 @@ export function saveLastSessionStats(stats) {
   // Add new session to the array
   allSessions.push(statsData)
   
-  // Keep only the last 100 sessions to prevent localStorage from getting too large
-  const recentSessions = allSessions.slice(-100)
+  // Keep only the last N sessions to prevent localStorage from getting too large
+  const recentSessions = allSessions.slice(-MAX_STORED_SESSIONS)
   
   // Save back to localStorage
   localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(recentSessions))

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { calculateSessionStats } from '../utils/stats'
+import { SESSION_STORAGE_KEY } from '../utils/constants'
 import './SummaryPage.css'
 
 function SummaryPage() {
@@ -8,8 +9,8 @@ function SummaryPage() {
   const [stats, setStats] = useState(null)
 
   useEffect(() => {
-    // Load session from sessionStorage
-    const sessionData = sessionStorage.getItem('currentSession')
+    // Load session from sessionStorage and calculate statistics
+    const sessionData = sessionStorage.getItem(SESSION_STORAGE_KEY)
     if (sessionData) {
       const session = JSON.parse(sessionData)
       const calculatedStats = calculateSessionStats(session.answers)
@@ -19,7 +20,7 @@ function SummaryPage() {
 
   const handleStartNewSession = () => {
     // Clear session from sessionStorage
-    sessionStorage.removeItem('currentSession')
+    sessionStorage.removeItem(SESSION_STORAGE_KEY)
     navigate('/')
   }
 

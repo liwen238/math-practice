@@ -1,6 +1,9 @@
 /**
  * Question generation utilities
+ * Handles generation of math questions with adaptive difficulty and duplicate prevention
  */
+
+import { MAX_GENERATION_ATTEMPTS, MAX_SESSION_GENERATION_ATTEMPTS, QUESTIONS_PER_SESSION } from './constants'
 
 /**
  * Level configurations
@@ -266,7 +269,7 @@ export function isDuplicate(question, questionArray) {
  * @returns {Question|null} Generated question or null if couldn't generate
  */
 export function generateAdaptiveQuestion(level, operations, difficulties, existingQuestions, questionId) {
-  const maxAttempts = 100;
+  const maxAttempts = MAX_GENERATION_ATTEMPTS;
   let attempts = 0;
   
   while (attempts < maxAttempts) {
@@ -291,10 +294,10 @@ export function generateAdaptiveQuestion(level, operations, difficulties, existi
  */
 export function generateSessionQuestions(level, operations) {
   const questions = [];
-  const maxAttempts = 1000; // Prevent infinite loops
+  const maxAttempts = MAX_SESSION_GENERATION_ATTEMPTS; // Prevent infinite loops
   let questionId = 1;
 
-  while (questions.length < 10) {
+  while (questions.length < QUESTIONS_PER_SESSION) {
     // Randomly select an operation
     const operation = operations[randomInt(0, operations.length - 1)];
     
@@ -324,7 +327,7 @@ export function generateSessionQuestions(level, operations) {
     }
   }
 
-  if (questions.length < 10) {
+  if (questions.length < QUESTIONS_PER_SESSION) {
     console.warn(`Only generated ${questions.length} unique questions`);
   }
 
