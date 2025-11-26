@@ -5,6 +5,7 @@ import SessionPage from './pages/SessionPage'
 import SummaryPage from './pages/SummaryPage'
 import StatsPage from './pages/StatsPage'
 import WrongReviewPage from './pages/WrongReviewPage'
+import './App.css'
 
 function App() {
   return (

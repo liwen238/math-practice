@@ -49,6 +49,14 @@
   color: #f44336;
 }
 
+.summary-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
 .new-session-button {
   padding: 18px 40px;
   font-size: 1.5rem;
@@ -59,11 +67,27 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
-  margin-top: 20px;
 }
 
 .new-session-button:hover {
   background-color: #1976D2;
+  transform: scale(1.05);
+}
+
+.view-stats-button {
+  padding: 18px 40px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.view-stats-button:hover {
+  background-color: #45a049;
   transform: scale(1.05);
 }
 

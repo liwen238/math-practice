@@ -55,28 +55,28 @@
 - [x] Show correct answer & self-report buttons on back.
 
 ## Phase 5 — Per-Session Statistics (medium-hard)
-- [ ] Track attempted, correct, incorrect.
-- [ ] Populate SummaryPage.
-- [ ] Save last session stats to localStorage.
-- [ ] Implement StatsPage.
+- [x] Track attempted, correct, incorrect.
+- [x] Populate SummaryPage.
+- [x] Save last session stats to localStorage.
+- [x] Implement StatsPage.
 
 ## Phase 6 — Wrong Question Persistence (hard)
-- [ ] Create persistence store for wrong questions.
-- [ ] Save wrong questions to localStorage.
-- [ ] Upsert with missCount & timestamp.
+- [x] Create persistence store for wrong questions.
+- [x] Save wrong questions to localStorage.
+- [x] Upsert with missCount & timestamp.
 
 ## Phase 7 — Review Wrong Questions Mode (harder)
-- [ ] Build WrongReviewPage with question cards.
-- [ ] Correcting removes from list.
-- [ ] Wrong again updates missCount.
+- [x] Build WrongReviewPage with question cards.
+- [x] Correcting removes from list.
+- [x] Wrong again updates missCount.
 
 ## Phase 8 — Adaptive Difficulty (hardest)
-- [ ] Add difficulty score per operation.
-- [ ] Update on right/wrong.
-- [ ] Adjust generator ranges using difficulty.
+- [x] Add difficulty score per operation.
+- [x] Update on right/wrong.
+- [x] Adjust generator ranges using difficulty.
 
 ## Phase 9 — Polish (optional)
-- [ ] Clear wrong-question history button.
-- [ ] Improved UI.
-- [ ] Guardrails for missing operations.
-- [ ] Basic unit tests.
+- [x] Clear wrong-question history button.
+- [x] Improved UI.
+- [x] Guardrails for missing operations.
+- [x] Basic unit tests.

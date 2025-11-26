@@ -55,11 +55,25 @@ function shuffleArray(array) {
 
 /**
  * Generate addition question
+ * @param {number} level - Age level (1, 2, or 3)
+ * @param {number} difficulty - Difficulty score (-3 to 3), optional
  */
-export function generateAddition(level) {
+export function generateAddition(level, difficulty = 0) {
   const config = LEVEL_CONFIGS[level];
-  const operand1 = randomInt(config.operandMin, config.operandMax);
-  const operand2 = randomInt(config.operandMin, config.operandMax);
+  
+  // Adjust range based on difficulty
+  let min = config.operandMin;
+  let max = config.operandMax;
+  
+  if (difficulty !== 0) {
+    const range = max - min;
+    const adjustment = (difficulty / 3) * (range * 0.3);
+    min = Math.floor(min + adjustment);
+    max = Math.floor(max + adjustment);
+  }
+  
+  const operand1 = randomInt(min, max);
+  const operand2 = randomInt(min, max);
   const correctAnswer = operand1 + operand2;
 
   return {
@@ -71,11 +85,25 @@ export function generateAddition(level) {
 
 /**
  * Generate subtraction question
+ * @param {number} level - Age level (1, 2, or 3)
+ * @param {number} difficulty - Difficulty score (-3 to 3), optional
  */
-export function generateSubtraction(level) {
+export function generateSubtraction(level, difficulty = 0) {
   const config = LEVEL_CONFIGS[level];
-  const operand1 = randomInt(config.operandMin, config.operandMax);
-  const operand2 = randomInt(config.operandMin, config.operandMax);
+  
+  // Adjust range based on difficulty
+  let min = config.operandMin;
+  let max = config.operandMax;
+  
+  if (difficulty !== 0) {
+    const range = max - min;
+    const adjustment = (difficulty / 3) * (range * 0.3);
+    min = Math.floor(min + adjustment);
+    max = Math.floor(max + adjustment);
+  }
+  
+  const operand1 = randomInt(min, max);
+  const operand2 = randomInt(min, max);
   const correctAnswer = operand1 - operand2;
 
   return {
@@ -87,11 +115,21 @@ export function generateSubtraction(level) {
 
 /**
  * Generate multiplication question (tables up to level limit)
+ * @param {number} level - Age level (1, 2, or 3)
+ * @param {number} difficulty - Difficulty score (-3 to 3), optional
  */
-export function generateMultiplication(level) {
+export function generateMultiplication(level, difficulty = 0) {
   const config = LEVEL_CONFIGS[level];
-  const operand1 = randomInt(1, config.tableMax);
-  const operand2 = randomInt(1, config.tableMax);
+  
+  // Adjust table max based on difficulty
+  let tableMax = config.tableMax;
+  if (difficulty !== 0) {
+    const adjustment = Math.floor((difficulty / 3) * (config.tableMax * 0.3));
+    tableMax = Math.max(1, Math.min(config.tableMax * 2, config.tableMax + adjustment));
+  }
+  
+  const operand1 = randomInt(1, tableMax);
+  const operand2 = randomInt(1, tableMax);
   const correctAnswer = operand1 * operand2;
 
   return {
@@ -103,12 +141,22 @@ export function generateMultiplication(level) {
 
 /**
  * Generate division question (exact only, no remainder)
+ * @param {number} level - Age level (1, 2, or 3)
+ * @param {number} difficulty - Difficulty score (-3 to 3), optional
  */
-export function generateDivision(level) {
+export function generateDivision(level, difficulty = 0) {
   const config = LEVEL_CONFIGS[level];
+  
+  // Adjust table max based on difficulty
+  let tableMax = config.tableMax;
+  if (difficulty !== 0) {
+    const adjustment = Math.floor((difficulty / 3) * (config.tableMax * 0.3));
+    tableMax = Math.max(1, Math.min(config.tableMax * 2, config.tableMax + adjustment));
+  }
+  
   // Generate a multiplication first, then reverse it for division
-  const divisor = randomInt(1, config.tableMax);
-  const quotient = randomInt(1, config.tableMax);
+  const divisor = randomInt(1, tableMax);
+  const quotient = randomInt(1, tableMax);
   const dividend = divisor * quotient; // This ensures exact division
 
   return {
@@ -152,22 +200,26 @@ export function generateDistractors(correctAnswer, level) {
 
 /**
  * Generate a complete question with choices
+ * @param {number} level - Age level (1, 2, or 3)
+ * @param {string} operation - Operation type
+ * @param {string} questionId - Unique question ID
+ * @param {number} difficulty - Difficulty score (-3 to 3), optional
  */
-export function generateQuestion(level, operation, questionId) {
+export function generateQuestion(level, operation, questionId, difficulty = 0) {
   let questionData;
   
   switch (operation) {
     case 'add':
-      questionData = generateAddition(level);
+      questionData = generateAddition(level, difficulty);
       break;
     case 'subtract':
-      questionData = generateSubtraction(level);
+      questionData = generateSubtraction(level, difficulty);
       break;
     case 'multiply':
-      questionData = generateMultiplication(level);
+      questionData = generateMultiplication(level, difficulty);
       break;
     case 'divide':
-      questionData = generateDivision(level);
+      questionData = generateDivision(level, difficulty);
       break;
     default:
       throw new Error(`Unknown operation: ${operation}`);
@@ -202,6 +254,36 @@ export function areQuestionsDuplicate(q1, q2) {
  */
 export function isDuplicate(question, questionArray) {
   return questionArray.some(q => areQuestionsDuplicate(question, q));
+}
+
+/**
+ * Generate a single question for a session (with adaptive difficulty)
+ * @param {number} level - Age level (1, 2, or 3)
+ * @param {string[]} operations - Array of available operations
+ * @param {Object} difficulties - Object mapping operations to difficulty scores
+ * @param {Question[]} existingQuestions - Array of already generated questions (for duplicate check)
+ * @param {number} questionId - Unique question ID
+ * @returns {Question|null} Generated question or null if couldn't generate
+ */
+export function generateAdaptiveQuestion(level, operations, difficulties, existingQuestions, questionId) {
+  const maxAttempts = 100;
+  let attempts = 0;
+  
+  while (attempts < maxAttempts) {
+    // Randomly select an operation
+    const operation = operations[randomInt(0, operations.length - 1)];
+    const difficulty = difficulties[operation] || 0;
+    
+    const question = generateQuestion(level, operation, questionId, difficulty);
+    
+    if (!isDuplicate(question, existingQuestions)) {
+      return question;
+    }
+    
+    attempts++;
+  }
+  
+  return null;
 }
 
 /**

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { generateSessionQuestions } from '../utils/questionGenerator'
+import { generateAdaptiveQuestion, generateQuestion } from '../utils/questionGenerator'
+import { initializeDifficulties } from '../utils/difficulty'
 import './SetupPage.css'
 
 function SetupPage() {
@@ -27,7 +28,7 @@ function SetupPage() {
   const handleStartSession = () => {
     // Validate selections
     if (!selectedLevel) {
-      alert('Please select an age level')
+      alert('Please select an age level to continue.')
       return
     }
 
@@ -46,22 +47,30 @@ function SetupPage() {
     if (selectedOperations.multiply) operations.push('multiply')
     if (selectedOperations.divide) operations.push('divide')
 
+    // Guardrail: Ensure at least one operation is selected
     if (operations.length === 0) {
-      alert('Please select at least one operation')
+      alert('Please select at least one operation (+, −, ×, or ÷) to start a practice session.')
       return
     }
 
-    // Generate questions
-    const questions = generateSessionQuestions(level, operations)
+    // Generate first question (difficulty starts at 0)
+    const initialDifficulties = initializeDifficulties(operations)
+    const firstQuestion = generateAdaptiveQuestion(
+      level,
+      operations,
+      initialDifficulties,
+      [],
+      'q1'
+    ) || generateQuestion(level, operations[0], 'q1', 0)
 
-    // Create session object
+    // Create session object - questions will be generated on-demand
     const session = {
       sessionId: `session-${Date.now()}`,
       level,
       operations,
-      questions,
+      questions: [firstQuestion], // Start with just the first question
       currentQuestionIndex: 0,
-      difficulty: 0,
+      difficulties: initialDifficulties, // Difficulty per operation
       answers: new Array(10).fill(null), // Track answers for each question
     }
 
@@ -131,12 +140,15 @@ function SetupPage() {
         </div>
       </div>
 
-      <button
-        className="start-session-button"
-        onClick={handleStartSession}
-      >
-        Start Session
-      </button>
+      <div className="setup-actions">
+        <button
+          className={`start-session-button ${!selectedLevel || Object.values(selectedOperations).every(v => !v) ? 'disabled' : ''}`}
+          onClick={handleStartSession}
+          disabled={!selectedLevel || Object.values(selectedOperations).every(v => !v)}
+        >
+          Start Session
+        </button>
+      </div>
     </div>
   )
 }

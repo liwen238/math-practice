@@ -98,8 +98,15 @@
   margin-top: 20px;
 }
 
-.start-session-button:hover {
+.start-session-button:hover:not(.disabled):not(:disabled) {
   background-color: #F57C00;
   transform: scale(1.05);
+}
+
+.start-session-button.disabled,
+.start-session-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #ccc;
 }
 

@@ -1,0 +1,53 @@
+/* Global app styles and improvements */
+
+/* Smooth transitions for better UX */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+/* Better focus states for accessibility */
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #2196F3;
+  outline-offset: 2px;
+}
+
+/* Loading state improvements */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Error message styling */
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  border-left: 4px solid #c62828;
+}
+
+/* Success message styling */
+.success-message {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  border-left: 4px solid #2e7d32;
+}
+
+/* Improved button hover states */
+button:not(:disabled):hover {
+  filter: brightness(1.1);
+}
+
+button:not(:disabled):active {
+  transform: scale(0.98);
+}
+

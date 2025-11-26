@@ -34,3 +34,86 @@
   text-align: center;
 }
 
+.review-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-progress {
+  font-size: 1.5rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.miss-count {
+  font-size: 1.2rem;
+  color: #f44336;
+  font-weight: 500;
+}
+
+.card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  perspective: 1000px;
+  width: 100%;
+}
+
+.navigation-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.nav-button {
+  padding: 12px 30px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.nav-button:hover:not(:disabled) {
+  background-color: #1976D2;
+  transform: scale(1.05);
+}
+
+.nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.clear-history-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.clear-history-button {
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.clear-history-button:hover {
+  background-color: #d32f2f;
+  transform: scale(1.05);
+}
+
